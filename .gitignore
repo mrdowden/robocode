@@ -1,0 +1,5 @@
+config/
+robots/
+robocode-*/
+robocode*.jar
+

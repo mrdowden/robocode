@@ -12,14 +12,19 @@ public class RobotStatManager {
 	private Map<String, RobotStats> data = new HashMap<>();
 	private String lastDamageFrom;
 
-	private void requireBot(String name) {
-		if (!data.containsKey(name)) {
-			data.put(name, new RobotStats(name));
+	public void reset() {
+		for (RobotStats rs : data.values()) {
+			out.println(format("Starting Stats for %s: %d kills, %.2f damage", rs.name, rs.deaths,
+					rs.damageTaken));
+			rs.damageDealt = 0;
+			rs.damageTaken = 0;
 		}
 	}
 
 	public RobotStats getStats(String name) {
-		requireBot(name);
+		if (!data.containsKey(name)) {
+			data.put(name, new RobotStats(name));
+		}
 		return data.get(name);
 	}
 

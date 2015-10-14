@@ -40,9 +40,9 @@ public class ChaseMovement implements MovementStrategy {
 		double x = robot.getX();
 		double y = robot.getY();
 		double heading = robot.getHeading();
-		// Set margins accounting for deceleration rate, include 5px safety buffer
-		double marginX = width / 2.0 + robot.getVelocity() * DECELERATION + 5.0;
-		double marginY = height / 2.0 + robot.getVelocity() * DECELERATION + 5.0;
+		// Set margins accounting for deceleration rate, include 10px safety buffer
+		double marginX = width / 2.0 + robot.getVelocity() * DECELERATION + 10.0;
+		double marginY = height / 2.0 + robot.getVelocity() * DECELERATION + 10.0;
 
 		// If pointed at a wall and inside the safe margin, stop
 		if (heading > 180 && x < marginX) {

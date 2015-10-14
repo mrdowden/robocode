@@ -34,14 +34,15 @@ import us.dowden.robocode.strategies.WidthLockRadar;
 
 public class GrudgeBot extends AdvancedRobot {
 
+	private static List<String> grudges = asList("DWTaggart", "Karolos", "DrunkenBoxer",
+			"Shandroid", "BotInBlack", "Corners");
+	private static RobotStatManager statManager = new RobotStatManager();
+
 	private String target;
 	private List<String> dead = new ArrayList<>();
-	private RobotStatManager statManager = new RobotStatManager();
 	private RadarStrategy radarStrategy;
 	private TargetingStrategy gunStrategy;
 	private MovementStrategy moveStrategy;
-	private List<String> grudges = asList("DWTaggart", "Karolos", "DrunkenBoxer", "Shandroid",
-			"BotInBlack", "Corners");
 	private Map<String, ScannedRobotEvent> scans = new HashMap<>();
 
 	@Override
@@ -60,6 +61,8 @@ public class GrudgeBot extends AdvancedRobot {
 
 		// Scan the battlefield once
 		turnRadarRight(360.0);
+		// Reset the stat manager between rounds (should have target by now)
+		statManager.reset();
 		// Main processing loop
 		do {
 			chooseTarget(null);
@@ -138,10 +141,17 @@ public class GrudgeBot extends AdvancedRobot {
 
 	@Override
 	public void onWin(WinEvent event) {
+		// Stop moving
+		setAhead(0.0);
+		// Fly our flag
+		setBodyColor(Color.RED);
+		setGunColor(Color.WHITE);
+		setRadarColor(Color.BLUE);
 		// Victory Dance
-		setBodyColor(Color.GREEN);
-		setGunColor(Color.GREEN);
-		turnRightRadians(50);
+		turnRightRadians(1.0);
+		turnRightRadians(-1.0);
+		turnRightRadians(1.0);
+		turnRightRadians(-1.0);
 	}
 
 	@Override
