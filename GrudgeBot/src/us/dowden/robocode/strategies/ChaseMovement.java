@@ -31,11 +31,6 @@ public class ChaseMovement implements MovementStrategy {
 			double aheadDistance = scanEvent.getEnergy() <= 0.6 ? scanEvent.getDistance() * 4.0
 					: scanEvent.getDistance() / 4.0;
 
-			System.out.println("AbsoluteBearing: " + absoluteBearing);
-			System.out.println("RobotVelocity: " + robotVelocity);
-			System.out.println("TurnRightRadians: " + scanEvent.getBearingRadians());
-			System.out.println("AheadDistance: " + aheadDistance);
-
 			robot.setTurnRightRadians(turnRightRadians);
 			robot.ahead(aheadDistance);
 		}
