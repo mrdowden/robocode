@@ -1,6 +1,10 @@
 package us.dowden.robocode.strategies;
 
 import static java.lang.Math.sin;
+import static java.lang.Math.toDegrees;
+import static java.lang.String.format;
+import static java.lang.System.err;
+import static java.lang.System.out;
 import static robocode.util.Utils.normalRelativeAngle;
 import robocode.AdvancedRobot;
 import robocode.ScannedRobotEvent;
@@ -25,11 +29,17 @@ public class NoniterativeLinearTargeting implements TargetingStrategy {
 	public void fire() {
 		if (scanEvent != null) {
 			double absoluteBearing = robot.getHeadingRadians() + scanEvent.getBearingRadians();
-			robot.setTurnGunRightRadians(normalRelativeAngle(absoluteBearing
+			double turnAngleRadians = normalRelativeAngle(absoluteBearing
 					- robot.getGunHeadingRadians()
 					+ (scanEvent.getVelocity()
-							* sin(scanEvent.getHeadingRadians() - absoluteBearing) / ESTIMATED_BULLET_SPEED)));
+							* sin(scanEvent.getHeadingRadians() - absoluteBearing) / ESTIMATED_BULLET_SPEED));
+
+			// out.println(format("Rotating turret %.1f degrees", toDegrees(turnAngleRadians)));
+
+			robot.setTurnGunRightRadians(turnAngleRadians);
 			robot.setFire(BULLET_SIZE);
+		} else {
+			err.println("Targeting: Scan Event NULL!!");
 		}
 	}
 

@@ -4,6 +4,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.sin;
 import static java.lang.Math.toDegrees;
 import static java.lang.String.format;
+import static java.lang.System.err;
 import static java.lang.System.out;
 import static robocode.Rules.DECELERATION;
 import static robocode.Rules.ROBOT_HIT_DAMAGE;
@@ -76,12 +77,17 @@ public class ChaseMovement implements MovementStrategy {
 					.getDistance() * 4.0 : (scanEvent.getDistance() < 2.0 * width ? -width
 					: scanEvent.getDistance() / 2.0);
 
+			/*out.println(format("Turning right %.1f degrees and advancing %.1f pixels",
+					toDegrees(turnRightRadians), aheadDistance));*/
+
 			robot.setTurnRightRadians(turnRightRadians);
 			if (wallSafe()) {
 				robot.setAhead(aheadDistance);
 			} else {
 				robot.setAhead(0);
 			}
+		} else {
+			err.println("Movement: Scan Event NULL!!");
 		}
 	}
 

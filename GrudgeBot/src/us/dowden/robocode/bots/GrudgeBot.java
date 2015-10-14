@@ -35,7 +35,7 @@ import us.dowden.robocode.strategies.WidthLockRadar;
 public class GrudgeBot extends AdvancedRobot {
 
 	private static List<String> grudges = asList("DWTaggart", "Karolos", "DrunkenBoxer",
-			"Shandroid", "BotInBlack", "Corners");
+			"Shandroid", "BotInBlack");
 	private static RobotStatManager statManager = new RobotStatManager();
 
 	private String target;
@@ -60,7 +60,10 @@ public class GrudgeBot extends AdvancedRobot {
 		setAdjustRadarForGunTurn(true);
 
 		// Scan the battlefield once
-		turnRadarRight(360.0);
+		while (scans.size() < getOthers()) {
+			setTurnRadarRight(360);
+			execute();
+		}
 		// Reset the stat manager between rounds (should have target by now)
 		statManager.reset();
 		// Main processing loop
@@ -160,6 +163,10 @@ public class GrudgeBot extends AdvancedRobot {
 	}
 
 	private void chooseTarget(String defaultTarget) {
+		// Ensure we don't have a dead target
+		if (dead.contains(target))
+			target = null;
+
 		String oldTarget = target;
 
 		// Select the living bot that has killed me the most times
