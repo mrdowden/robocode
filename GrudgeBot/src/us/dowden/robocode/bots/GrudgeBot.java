@@ -26,8 +26,8 @@ import robocode.WinEvent;
 import us.dowden.robocode.RobotStatManager;
 import us.dowden.robocode.RobotStats;
 import us.dowden.robocode.strategies.ChaseMovement;
+import us.dowden.robocode.strategies.IterativeLinearTargeting;
 import us.dowden.robocode.strategies.MovementStrategy;
-import us.dowden.robocode.strategies.NoniterativeLinearTargeting;
 import us.dowden.robocode.strategies.RadarStrategy;
 import us.dowden.robocode.strategies.TargetingStrategy;
 import us.dowden.robocode.strategies.WidthLockRadar;
@@ -48,7 +48,7 @@ public class GrudgeBot extends AdvancedRobot {
 	@Override
 	public void run() {
 		radarStrategy = new WidthLockRadar(this);
-		gunStrategy = new NoniterativeLinearTargeting(this);
+		gunStrategy = new IterativeLinearTargeting(this);
 		moveStrategy = new ChaseMovement(this);
 
 		setBodyColor(new Color(0, 0, 0));
