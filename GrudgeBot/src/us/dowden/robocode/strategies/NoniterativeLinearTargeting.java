@@ -1,10 +1,7 @@
 package us.dowden.robocode.strategies;
 
 import static java.lang.Math.sin;
-import static java.lang.Math.toDegrees;
-import static java.lang.String.format;
 import static java.lang.System.err;
-import static java.lang.System.out;
 import static robocode.util.Utils.normalRelativeAngle;
 import robocode.AdvancedRobot;
 import robocode.ScannedRobotEvent;

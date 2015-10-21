@@ -1,4 +1,4 @@
-package us.dowden.robocode.bots;
+package mrd;
 
 import static java.lang.String.format;
 import static java.lang.System.err;
