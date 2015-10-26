@@ -43,7 +43,7 @@ public class CircularTargeting implements TargetingStrategy {
 	}
 
 	@Override
-	public void fire() {
+	public void fire(long time) {
 		if (scanEvent != null) {
 			// Setup inputs
 			double bulletPower = min(MAX_BULLET_POWER, robot.getEnergy());

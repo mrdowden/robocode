@@ -4,6 +4,6 @@ import robocode.ScannedRobotEvent;
 
 public interface Strategy {
 
-	public abstract void scan(ScannedRobotEvent e);
+	public void scan(ScannedRobotEvent e);
 
 }

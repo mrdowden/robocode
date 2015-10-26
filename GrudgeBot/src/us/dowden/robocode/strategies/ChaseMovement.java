@@ -13,8 +13,9 @@ import java.awt.Graphics2D;
 
 import robocode.AdvancedRobot;
 import robocode.ScannedRobotEvent;
+import us.dowden.robocode.Paintable;
 
-public class ChaseMovement implements MovementStrategy {
+public class ChaseMovement implements MovementStrategy, Paintable {
 	private AdvancedRobot robot;
 
 	private ScannedRobotEvent scanEvent;
@@ -64,7 +65,7 @@ public class ChaseMovement implements MovementStrategy {
 	}
 
 	@Override
-	public void move() {
+	public void move(long time) {
 		if (scanEvent != null) {
 			double absoluteBearing = robot.getHeadingRadians() + scanEvent.getBearingRadians();
 			double robotVelocity = max(1.0, robot.getVelocity());
@@ -76,8 +77,10 @@ public class ChaseMovement implements MovementStrategy {
 					.getDistance() * 4.0 : (scanEvent.getDistance() < 2.0 * width ? -width
 					: scanEvent.getDistance() / 2.0);
 
-			/*out.println(format("Turning right %.1f degrees and advancing %.1f pixels",
-					toDegrees(turnRightRadians), aheadDistance));*/
+			/*
+			 * out.println(format("Turning right %.1f degrees and advancing %.1f pixels",
+			 * toDegrees(turnRightRadians), aheadDistance));
+			 */
 
 			robot.setTurnRightRadians(turnRightRadians);
 			if (wallSafe()) {

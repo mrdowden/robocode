@@ -2,14 +2,16 @@ package mrd;
 
 import static java.lang.String.format;
 import static java.lang.System.err;
-import static java.util.Arrays.asList;
 import static robocode.Rules.ROBOT_HIT_DAMAGE;
 import static robocode.Rules.getBulletDamage;
+import static us.dowden.robocode.util.BotUtils.compareDouble;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,11 +34,10 @@ import us.dowden.robocode.strategies.MovementStrategy;
 import us.dowden.robocode.strategies.RadarStrategy;
 import us.dowden.robocode.strategies.TargetingStrategy;
 import us.dowden.robocode.strategies.WidthLockRadar;
+import us.dowden.robocode.util.DrawObject;
 
-public class GrudgeBot extends AdvancedRobot {
+public class Opportunist extends AdvancedRobot {
 
-	private static List<String> grudges = asList("DWTaggart", "Karolos", "DrunkenBoxer",
-			"Shandroid", "BotInBlack");
 	private static RobotStatManager statManager = new RobotStatManager();
 
 	private String target;
@@ -45,6 +46,7 @@ public class GrudgeBot extends AdvancedRobot {
 	private TargetingStrategy gunStrategy;
 	private MovementStrategy moveStrategy;
 	private Map<String, ScannedRobotEvent> scans = new HashMap<>();
+	private Deque<DrawObject> drawStack = new LinkedList<>();
 
 	@Override
 	public void run() {
@@ -52,11 +54,11 @@ public class GrudgeBot extends AdvancedRobot {
 		gunStrategy = new IterativeLinearTargeting(this);
 		moveStrategy = new ChaseMovement(this);
 
-		setBodyColor(new Color(0, 0, 0));
-		setGunColor(new Color(237, 237, 237));
-		setRadarColor(new Color(180, 180, 180));
-		setBulletColor(new Color(16, 255, 0));
-		setScanColor(new Color(102, 211, 255));
+		setBodyColor(Color.ORANGE);
+		setGunColor(Color.GREEN);
+		setRadarColor(Color.YELLOW);
+		setBulletColor(Color.RED);
+		setScanColor(Color.CYAN);
 		setAdjustGunForRobotTurn(true);
 		setAdjustRadarForGunTurn(true);
 
@@ -70,6 +72,8 @@ public class GrudgeBot extends AdvancedRobot {
 		// Main processing loop
 		do {
 			chooseTarget(null);
+			if (target == null)
+				setTurnRadarRightRadians(0.0);
 			radarStrategy.turn(getTime());
 			gunStrategy.fire(getTime());
 			moveStrategy.move(getTime());
@@ -160,6 +164,15 @@ public class GrudgeBot extends AdvancedRobot {
 
 	@Override
 	public void onPaint(Graphics2D g) {
+		while (!drawStack.isEmpty()) {
+			DrawObject obj = drawStack.pop();
+			if (obj.color != null)
+				g.setColor(obj.color);
+			if (obj.draw != null)
+				g.draw(obj.draw);
+			if (obj.fill != null)
+				g.fill(obj.fill);
+		}
 		((Paintable) moveStrategy).paint(g);
 	}
 
@@ -170,56 +183,31 @@ public class GrudgeBot extends AdvancedRobot {
 
 		String oldTarget = target;
 
-		// Select the living bot that has killed me the most times
-		Optional<RobotStats> deathCandidate = statManager
-				.stream()
-				.filter(r -> r.deaths > 0)
-				.filter(r -> !dead.contains(r.name))
-				.max((RobotStats r1, RobotStats r2) -> r1.deaths != r2.deaths ? r1.deaths
-						- r2.deaths : (int) (r1.damageTaken - r2.damageTaken));
-
-		// Select the living bot that has dealt the most damage this round
-		Optional<RobotStats> dmgCandidate = statManager.stream().filter(r -> r.damageTaken > 10)
-				.filter(r -> !dead.contains(r.name))
-				.max((RobotStats r1, RobotStats r2) -> (int) (r1.damageTaken - r2.damageTaken));
-
-		// Select living grudge with weakest energy
-		Optional<ScannedRobotEvent> grudge = scans
-				.values()
-				.stream()
+		// Select living bot with the lowest energy
+		Optional<ScannedRobotEvent> lowEnergy = scans.values().stream()
 				.filter(r -> !dead.contains(r.getName()))
-				.filter(r -> grudges.stream().anyMatch(g -> r.getName().contains(g)))
-				.min((ScannedRobotEvent e1, ScannedRobotEvent e2) -> (int) (e1.getEnergy() - e2
-						.getEnergy()));
+				.min((r1, r2) -> compareDouble(r1.getEnergy(), r2.getEnergy()));
 
-		// Start by targeting the bot that's killed me the most (initial setting for each round)
-		if (target == null && deathCandidate.isPresent()) {
-			target = deathCandidate.get().name;
-			out.println(format("Targeting %s for killing me %d times", target,
-					deathCandidate.get().deaths));
+		// Select living bot that has killed/hurt me the least
+		int fewestDeaths = statManager.stream().filter(r -> !dead.contains(r.name))
+				.mapToInt(r -> r.deaths).min().orElse(0);
+		Optional<RobotStats> lowThreat = statManager.stream().filter(r -> !dead.contains(r.name))
+				.filter(r -> r.deaths == fewestDeaths)
+				.min((r1, r2) -> compareDouble(r1.damageTaken, r2.damageTaken));
 
-			// Next choice is the bot that's done the most damage
-		} else if (target == null && dmgCandidate.isPresent()) {
-			target = dmgCandidate.get().name;
-			out.println(format("Targeting %s for dealing %.2f damage", target,
-					dmgCandidate.get().damageTaken));
-
-			// Next lets look at long-term grudges
-		} else if (target == null && grudge.isPresent()) {
-			target = grudge.get().getName();
-			out.println(format("Targeting %s with energy %.2f for a grudge", target, grudge.get()
+		// Start by targeting weakest bot, switching to the weakest bot when appropriate
+		if (lowEnergy.isPresent()
+				&& (target == null || (scans.get(target).getEnergy() > 20 && lowEnergy.get()
+						.getEnergy() + 20 < scans.get(target).getEnergy()))) {
+			target = lowEnergy.get().getName();
+			out.println(format("Targeting %s for low energy %.2f", target, lowEnergy.get()
 					.getEnergy()));
 
-			// Opportunity to change target to the one actively damaging me
-		} else if (target != null && dmgCandidate.isPresent()) {
-			RobotStats targetStats = statManager.getStats(target);
-
-			if ((dmgCandidate.get().damageTaken >= targetStats.damageTaken * 1.2)
-					&& (dmgCandidate.get().damageTaken > targetStats.damageTaken + 18)) {
-				target = dmgCandidate.get().name;
-				out.println(format("Targeting %s for dealing %.2f damage", target,
-						dmgCandidate.get().damageTaken));
-			}
+			// Next choice is the bot with the least threat (fewest kills, least damage)
+		} else if (target == null && lowThreat.isPresent()) {
+			target = lowThreat.get().name;
+			out.println(format("Targeting %s for low threat (%d kills, %.2f damage)", target,
+					lowThreat.get().deaths, lowThreat.get().damageTaken));
 
 			// If I still don't have a target, use the one provided
 		} else if (target == null && defaultTarget != null) {

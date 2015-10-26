@@ -8,15 +8,17 @@ import static robocode.util.Utils.normalRelativeAngle;
 import robocode.AdvancedRobot;
 import robocode.ScannedRobotEvent;
 
-public class WidthLockRadar implements RadarStrategy {
+public class MinLockRadar implements RadarStrategy {
 	private AdvancedRobot robot;
 
-	public WidthLockRadar(AdvancedRobot robot) {
+	public MinLockRadar(AdvancedRobot robot) {
 		this.robot = robot;
 	}
 
 	@Override
 	public void scan(ScannedRobotEvent e) {
+		System.out.println(String.format("Turn: %d", e.getTime()));
+
 		// Absolute angle towards target
 		double angleToEnemy = robot.getHeadingRadians() + e.getBearingRadians();
 
@@ -43,6 +45,7 @@ public class WidthLockRadar implements RadarStrategy {
 
 	@Override
 	public void turn(long time) {
+		System.out.println(String.format("Turn: %d", time));
 		if (robot.getRadarTurnRemaining() == 0.0)
 			robot.setTurnRadarRightRadians(POSITIVE_INFINITY);
 	}

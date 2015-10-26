@@ -23,7 +23,7 @@ public class NoniterativeLinearTargeting implements TargetingStrategy {
 	}
 
 	@Override
-	public void fire() {
+	public void fire(long time) {
 		if (scanEvent != null) {
 			double absoluteBearing = robot.getHeadingRadians() + scanEvent.getBearingRadians();
 			double turnAngleRadians = normalRelativeAngle(absoluteBearing
